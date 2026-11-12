@@ -1,0 +1,9 @@
+Drop your own files in this folder (exact names, lowercase):
+
+  song.mp3      Background song. A "Music" button in the header plays it on a loop.
+                (The button stays greyed out until this file exists.)
+
+  room-bg.jpg   Optional photo for the room. It is blended softly into the wall,
+                so a dark, moody photo works best.
+
+Everything else here (icon.svg, fonts/) is part of the app. Leave it alone.

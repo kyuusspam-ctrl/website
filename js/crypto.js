@@ -1,0 +1,10 @@
+// Password verification remains one-way salted PBKDF2. The decrypt-only helpers
+// are for one-time migration of media/books saved by the previous encrypted build.
+const enc=new TextEncoder();
+export async function passwordRecord(password){const salt=crypto.getRandomValues(new Uint8Array(16));const material=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,256);return {salt:b64(salt),hash:b64(new Uint8Array(bits)),iterations:310000}}
+export async function verifyPassword(password,record){if(!record)return false;const salt=unb64(record.salt),material=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']),bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:record.iterations,hash:'SHA-256'},material,256);return b64(new Uint8Array(bits))===record.hash}
+async function legacyWrappingKey(password,salt){const material=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt'])}
+export async function unwrapLegacyBookKey(envelope,password){const key=await legacyWrappingKey(password,unb64(envelope.salt)),raw=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(envelope.iv)},key,unb64(envelope.wrapped));return crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['decrypt'])}
+export async function openLegacyJSON(sealed,key){const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(sealed.iv)},key,unb64(sealed.cipher));return JSON.parse(new TextDecoder().decode(plain))}
+export async function decryptLegacyBlob(blob,key,type='application/octet-stream'){const bytes=new Uint8Array(await blob.arrayBuffer()),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},key,bytes.slice(12));return new Blob([plain],{type})}
+const b64=b=>btoa(String.fromCharCode(...b));const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));

@@ -1,0 +1,1 @@
+{"name":"The Memory Bookshelf","short_name":"Memory Shelf","description":"A private shelf of shared moments.","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#34231d","theme_color":"#34231d","icons":[{"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
